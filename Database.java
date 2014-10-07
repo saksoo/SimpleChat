@@ -4,12 +4,25 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 public class Database {
 	
 	java.sql.Connection connection;
 	String DB_URL,username,password,T;
+	
+	// Queries 
+	private final String deleteAll = "delete from comments";
+	private final String insertRec = "INSERT INTO comments (name,sxolio,date) VALUES (?, ?, ?)";
+	private final String selectAll = "SELECT name,sxolio,date FROM comments ";
+	
+	//Locks
+	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+	private final Lock read = lock.readLock();
+	private final Lock write = lock.writeLock();
+	
 	
 	Database() {
 		try { // Connection to Database
@@ -49,19 +62,23 @@ public class Database {
 
 	public void deletemessages(){
 	    try{
-	            String query = "delete from comments";
-	            PreparedStatement preparedStmt;
-	            preparedStmt = connection.prepareStatement(query);
-	            preparedStmt.executeUpdate();
-	        }  
-	        catch(SQLException e){    
-	        }   
+	    	write.lock();
+            PreparedStatement preparedStmt;
+            preparedStmt = connection.prepareStatement(deleteAll);
+            preparedStmt.executeUpdate();
+        }  
+        catch(SQLException e){    
+        } 
+	    finally {
+	    	write.unlock();
+	    }
 	}
 	
 	
 	public void insertdb(String name,String message){
 		try {
-            PreparedStatement s = (PreparedStatement) connection.prepareStatement("INSERT INTO comments (name,sxolio,date) VALUES (?, ?, ?)");
+			write.lock();
+            PreparedStatement s = (PreparedStatement) connection.prepareStatement(insertRec);
             s.setString(1, name);
             s.setString(2, message);
             s.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
@@ -69,24 +86,27 @@ public class Database {
 		} 
 		catch (SQLException e) {
 		}               
+		finally {
+			write.unlock();
+		}
 		
-	
 	}
 	
 	public ResultSet selectalldb(){
 		try {
-			String sql = "SELECT name,sxolio,date FROM comments "; //ORDER BY idcomments ASC
-	        PreparedStatement pre;
+			read.lock();
 	        ResultSet set;
-	        pre = connection.prepareStatement(sql);
+	        PreparedStatement pre = connection.prepareStatement(selectAll);
 	        set = pre.executeQuery();
 	        return set;
 		}
 		catch(SQLException e){
 			return null;
 		}
-	
 		
+		finally {
+			read.unlock();
+		}
 	}
 	
 	

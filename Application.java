@@ -1,11 +1,9 @@
 package chatapplet;
 
 
-public class program {
+public class Application {
     public static void main(String args[]) {
-        Panel p;
-        p = new Panel();
-        p.setVisible(true);
+        new Panel().setVisible(true);
     }
                
     

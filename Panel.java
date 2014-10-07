@@ -18,7 +18,9 @@ import javax.swing.Timer;
 
 public class Panel extends javax.swing.JFrame {
     
-    public String DB_URL,username,password,message,T;
+
+	private static final long serialVersionUID = 1L;
+	public String DB_URL,username,password,message,T;
     public Workerdb w;
     public java.sql.Connection connection;
      
@@ -55,7 +57,7 @@ public class Panel extends javax.swing.JFrame {
 
   
     
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
 

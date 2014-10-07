@@ -2,6 +2,7 @@ package chatapplet;
 
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 
@@ -56,6 +57,38 @@ public class Database {
 	        catch(SQLException e){    
 	        }   
 	}
+	
+	
+	public void insertdb(String name,String message){
+		try {
+            PreparedStatement s = (PreparedStatement) connection.prepareStatement("INSERT INTO comments (name,sxolio,date) VALUES (?, ?, ?)");
+            s.setString(1, name);
+            s.setString(2, message);
+            s.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
+            s.executeUpdate();    
+		} 
+		catch (SQLException e) {
+		}               
+		
+	
+	}
+	
+	public ResultSet selectalldb(){
+		try {
+			String sql = "SELECT name,sxolio,date FROM comments "; //ORDER BY idcomments ASC
+	        PreparedStatement pre;
+	        ResultSet set;
+	        pre = connection.prepareStatement(sql);
+	        set = pre.executeQuery();
+	        return set;
+		}
+		catch(SQLException e){
+			return null;
+		}
+	
+		
+	}
+	
 	
 }
 

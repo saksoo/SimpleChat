@@ -3,60 +3,35 @@ package chatapplet;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JOptionPane;
-
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
 
 public class Panel extends javax.swing.JFrame {
-    
-
-	private static final long serialVersionUID = 1L;
-	public String DB_URL,username,password,message,T;
-    public Workerdb w;
-    public java.sql.Connection connection;
-     
+	
+	private static final long serialVersionUID = 1L;	
+    public Workerdb w; 
     String name = "nickname            ";
+    Database db;
     
     public Panel() {
-                     
-        try { // Connection to Database
-            DB_URL = "jdbc:mysql://db4free.net:3306/saksoo";
-            username = "saksoo";
-            password = "saksoo3377";
-            T = "1000";
- 
-            Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection(DB_URL, username, password);
-            System.out.println("Database connection successful.");
+    		db = new Database();
             //Starting Swing Worker update
-            w = new Workerdb(Integer.parseInt(T));
+            w = new Workerdb(Integer.parseInt(db.T));
             w.execute();
+            // Initiation of some things
+            this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
+            initComponents();
+            updateChat();      
+            settime();      
        }
-        catch( SQLException  | ClassNotFoundException  e){
-            JOptionPane.showMessageDialog(null, "Cannot connect to the database. Please check your internet connection");
-            System.exit(EXIT_ON_CLOSE);
-        } 
-        
-        // Initiation of some things
-       
-        this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("logo.png")));
-        initComponents();
-        updateChat();      
-        settime();         
-    }
-        
-
-  
-    
+     
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
@@ -219,16 +194,11 @@ public class Panel extends javax.swing.JFrame {
     }// </editor-fold>                        
 
     private void Closing_frame(java.awt.event.WindowEvent evt) {                               
-
-        try {
-            connection.close();
-            System.out.println("Connection closed. ");
+            db.close();
             //Closing auto refresh updating swingworker
             System.out.println("Closing auto refresh updating.. ");
             w.cancel(true);
-         } catch (SQLException e1) {
-            System.out.println("Connection close failed! ");
-         }
+         
     }                              
 
     private void Elaxistopoihsh(java.awt.event.WindowEvent evt) {                                
@@ -236,7 +206,7 @@ public class Panel extends javax.swing.JFrame {
     }                               
 
     private void oxi_elaxistopoihsh(java.awt.event.WindowEvent evt) {                                    
-        w = new Workerdb(Integer.parseInt(T));
+        w = new Workerdb(Integer.parseInt(db.T));
         w.execute();
     }                                   
 
@@ -253,13 +223,13 @@ public class Panel extends javax.swing.JFrame {
     }                                           
 
     private void messageTextKeyPressed(java.awt.event.KeyEvent evt) {                                       
-        // TODO add your handling code here:
+        
     }                                      
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {                                            
-        if (jTextField1.getText().equals("deletedb")) {
+        if (jTextField1.getText().equals("deletedb")) { /// secret delete db
                JOptionPane.showMessageDialog(null, "Secret phrase");
-               deletemessages();
+               db.deletemessages();
                return;
         }
         changename();      
@@ -291,12 +261,8 @@ public static boolean isNotNullNotEmptyNotWhiteSpaceOnlyByJava(final String stri
 
 boolean updateChat(){
     try {
-        String sql = "SELECT name,sxolio,date FROM comments "; //ORDER BY idcomments ASC
-        PreparedStatement pre;
-        ResultSet set;
-        pre = connection.prepareStatement(sql);
-        set = pre.executeQuery();
-               
+    	ResultSet set = db.selectalldb();
+           
         String result = "Nickname       "   + "\t"  + "\t"+ "Message"  + "\n" + "\n";
         
         while (set.next()) {
@@ -304,7 +270,6 @@ boolean updateChat(){
         } 
         
         set.close();
-        pre.close();
         area.setText(result);  
         area.setCaretPosition(area.getDocument().getLength());  // scroll always to last messages
         return true;
@@ -315,33 +280,16 @@ boolean updateChat(){
 }
 
 
-public void deletemessages(){
-    try{
-            String query = "delete from comments";
-            PreparedStatement preparedStmt;
-            preparedStmt = connection.prepareStatement(query);
-            preparedStmt.executeUpdate();
-        }  
-        catch(SQLException e){    
-        }   
-}
-
 public void Insert() {
     if ( !isNotNullNotEmptyNotWhiteSpaceOnlyByJava(messageText.getText()) ) { // check if message is empty
             JOptionPane.showMessageDialog(null, "Please write your message");
             return;
     }
-           
-    try {
-                PreparedStatement s = (PreparedStatement) connection.prepareStatement("INSERT INTO comments (name,sxolio,date) VALUES (?, ?, ?)");
-                s.setString(1, name);
-                s.setString(2, messageText.getText());
-                s.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
-                s.executeUpdate();    
-                messageText.setText("");
-    } 
-    catch (SQLException e) {
-    }               
+  
+    String messagetoInsert = messageText.getText();   
+    db.insertdb(name, messagetoInsert);   
+    messageText.setText("");
+    
 }
 
 public void changename(){
@@ -356,7 +304,6 @@ public void changename(){
     }
 
     System.out.println(diafora);
-
 
     jTextField1.setText(name);
     jLabel3.setText("Your nick is: " + name);

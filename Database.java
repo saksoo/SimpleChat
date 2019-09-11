@@ -27,8 +27,8 @@ public class Database {
 	Database() {
 		try { // Connection to Database
 	        DB_URL = "jdbc:mysql://db4free.net:3306/saksoo";
-	        username = "saksoo";
-	        password = "saksoo3377";
+	        username = "tt";
+	        password = "tt";
 	        T = "1000";
 
 	        Class.forName("com.mysql.jdbc.Driver");
